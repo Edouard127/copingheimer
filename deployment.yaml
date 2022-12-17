@@ -30,3 +30,5 @@ spec:
               memory: "8192Mi"
               cpu: "2000m"
           imagePullPolicy: Always
+      #imagePullSecrets:
+        #- name: regcrednexus # Example of how to use a secret
