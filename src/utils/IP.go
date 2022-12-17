@@ -7,12 +7,11 @@ import (
 func getNextIP(ip net.IP, offset int) net.IP {
 	ip = ip.To4()
 	for i := 3; i >= 0; i-- {
-		if ip[i]+byte(offset) < ip[i] {
-			offset = 1
-		} else {
-			offset = 0
-		}
 		ip[i] += byte(offset)
+		if ip[i] >= byte(offset) {
+			break
+		}
+		offset = 1
 	}
 	return ip
 }
