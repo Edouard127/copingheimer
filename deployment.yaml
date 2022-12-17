@@ -18,17 +18,25 @@ spec:
       containers:
         - name: copingheimer
           image: edouard127/copingheimer:latest
+          command: ["./main"]
+          args:
+            - '-ip=$(ip)'
+            - '-i=$(i)'
+            - '-t=$(t)'
           env:
             - name: ip
-              value: "0.0.0.0"
-          args: ["--ip=$(ip)"] # Example of how to use the env variable
+              value: 193.146.165.58
+            - name: i
+              value: '512'
+            - name: t
+              value: '4000'
           resources:
-            requests:
-              memory: "4096Mi"
-              cpu: "750m"
             limits:
-              memory: "8192Mi"
-              cpu: "2000m"
+              cpu: '2'
+              memory: 4Gi
+            requests:
+              cpu: 750m
+              memory: 2Gi
           imagePullPolicy: Always
       #imagePullSecrets:
         #- name: regcrednexus # Example of how to use a secret
