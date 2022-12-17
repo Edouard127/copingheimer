@@ -13,6 +13,29 @@ func getNextIP(ip net.IP, offset int) net.IP {
 		}
 		offset = 1
 	}
+	if ip.IsPrivate() {
+		return skipPrivate(ip)
+	}
+	return ip
+}
+
+func skipPrivate(ip net.IP) net.IP {
+	if ip[0] == 10 {
+		ip[0] = 11
+	}
+	if ip[0] == 172 && ip[1]&0xf0 == 16 {
+		ip[1] = 32
+	}
+	if ip[0] == 192 && ip[1] == 168 {
+		ip[1] = 169
+	}
+	return skipLoopback(ip)
+}
+
+func skipLoopback(ip net.IP) net.IP {
+	if ip[0] == 127 {
+		ip[0] = 128
+	}
 	return ip
 }
 
@@ -45,4 +68,8 @@ func (s SubnetIterator) GetNext(i int) net.IP {
 
 func (s SubnetIterator) NextSubnet(n int) {
 	s.CurIP = getNextIP(s.CurIP, 256*n)
+}
+
+func (s SubnetIterator) SetCurrent(ip net.IP) {
+	s.CurIP = ip
 }

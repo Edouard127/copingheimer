@@ -12,7 +12,8 @@ type Config struct {
 	InstanceCount int    `json:"instance_count" env:"INSTANCE_COUNT"`
 	Timeout       int    `json:"timeout" env:"TIMEOUT"`
 	CPUSaver      bool   `json:"cpu_saver" env:"CPU_SAVER"`
-	Database      string `json:"database" env:"DATABASE"` // The path to the database file
+	Database      string `json:"database" env:"DATABASE"` // The type of the database, currently supported: bolt, mongodb
+	DatabaseURL   string `json:"database_url" env:"DATABASE_URL"`
 }
 
 func LoadConfig(filename string) *Config {
