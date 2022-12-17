@@ -9,9 +9,10 @@ import (
 )
 
 type Config struct {
-	InstanceCount int  `json:"instance_count" env:"INSTANCE_COUNT"`
-	Timeout       int  `json:"timeout" env:"TIMEOUT"`
-	CPUSaver      bool `json:"cpu_saver" env:"CPU_SAVER"`
+	InstanceCount int    `json:"instance_count" env:"INSTANCE_COUNT"`
+	Timeout       int    `json:"timeout" env:"TIMEOUT"`
+	CPUSaver      bool   `json:"cpu_saver" env:"CPU_SAVER"`
+	Database      string `json:"database" env:"DATABASE"` // The path to the database file
 }
 
 func LoadConfig(filename string) *Config {

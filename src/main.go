@@ -7,17 +7,18 @@ import (
 	provider "github.com/Tnze/go-mc/bot"
 	"github.com/boltdb/bolt"
 	"net"
+	"path"
 	"time"
 )
 
 var (
-	Config *intf.Config
+	Config = intf.LoadConfig("config.env")
 	Subnet = &net.IPNet{
 		IP:   net.IP{193, 0, 0, 0},
 		Mask: net.IPMask{255, 255, 0, 0},
 	}
 	IP            = utils.IPSubnetIterator(Subnet)
-	Database, err = bolt.Open("copingheimer.db", 0600, nil)
+	Database, err = bolt.Open(path.Join(Config.Database, "copingheimer.db"), 0600, nil)
 	tasks         = 0
 )
 
@@ -29,9 +30,6 @@ func main() {
 		"Copingheimer, by Kamigen\n" +
 			"This program will ping Minecraft servers all around the world and try to get as much data as possible",
 	)
-
-	// Load config
-	Config = intf.LoadConfig("config.env")
 
 	if err := Database.Update(func(tx *bolt.Tx) error {
 		_, err := tx.CreateBucketIfNotExists([]byte("servers"))
