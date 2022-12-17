@@ -46,6 +46,13 @@ func init() {
 	IP = utils.IPSubnetIterator(Subnet)
 }
 
+func handle() {
+	if err := utils.Write(Database, "current_ip", []byte(IP().CurIP.String())); err != nil {
+		fmt.Println(err)
+	}
+	// Golang does not support the atexit function from C, so I will write to ip.txt
+}
+
 func main() {
 	if err != nil {
 		panic(err)
@@ -66,8 +73,12 @@ func main() {
 
 	// Save the current IP on close
 	defer func() {
-		if err := utils.Write(Database, "current_ip", []byte(IP().CurIP.String())); err != nil {
-			fmt.Println(err)
+		rec := recover()
+		if rec != nil {
+			fmt.Println(rec)
+			if err := utils.Write(Database, "current_ip", []byte(IP().CurIP.String())); err != nil {
+				fmt.Println(err)
+			}
 		}
 	}()
 

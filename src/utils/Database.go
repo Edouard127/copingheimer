@@ -31,14 +31,19 @@ func InitDatabase(cfg *intf.Config) (interface{}, error) {
 	case "mongodb":
 		ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 		defer cancel()
+		fmt.Println("Connecting to MongoDB...", cfg.DatabaseURL)
 		if client, err := mongo.Connect(ctx, options.Client().ApplyURI(cfg.DatabaseURL)); err != nil {
 			return nil, err
 		} else {
 			// Create the collection if it doesn't exist
-			if err := client.Database("copingheimer").CreateCollection(ctx, "servers"); err != nil {
-				return nil, err
-			} else {
+			if client.Database("copingheimer").Collection("servers").FindOne(ctx, bson.M{}); err == nil {
 				return client, nil
+			} else {
+				if err := client.Database("copingheimer").CreateCollection(ctx, "servers"); err != nil {
+					return nil, err
+				} else {
+					return client, nil
+				}
 			}
 		}
 	}
