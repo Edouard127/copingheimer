@@ -18,9 +18,15 @@ spec:
       containers:
         - name: copingheimer
           image: edouard127/copingheimer:latest
+          env:
+            - name: ip
+              value: "0.0.0.0"
+          args: ["--ip=$(ip)"] # Example of how to use the env variable
           resources:
-            limits:
-              cpu: "8"
             requests:
-              cpu: "4"
+              memory: "4096Mi"
+              cpu: "750m"
+            limits:
+              memory: "8192Mi"
+              cpu: "2000m"
           imagePullPolicy: Always

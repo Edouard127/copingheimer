@@ -29,7 +29,7 @@ var (
 func init() {
 	flag.StringVar(&Arguments.Config, "c", "config.env", "Path to the config file")
 	flag.StringVar(&Arguments.IP, "ip", "0.0.0.1", "IP address to start from")
-	flag.StringVar(&Arguments.IP, "i", "256", "Number of instances to run")
+	flag.IntVar(&Arguments.Instances, "i", 256, "Number of instances to run")
 	flag.IntVar(&Arguments.Timeout, "t", 5000, "Timeout for each ping")
 	flag.BoolVar(&Arguments.Help, "h", false, "Show this help")
 	flag.Parse()
