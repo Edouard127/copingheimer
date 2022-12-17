@@ -18,6 +18,11 @@ spec:
       containers:
         - name: copingheimer
           image: edouard127/copingheimer:latest
+          resources:
+            limits:
+              cpu: "8"
+            requests:
+              cpu: "4"
           imagePullPolicy: Always
           volumeMounts:
             - name: copingheimer-persistent-storage
