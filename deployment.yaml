@@ -1,0 +1,59 @@
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: copingheimer-deployment
+  labels:
+    app: copingheimer
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: copingheimer
+  template:
+    metadata:
+      labels:
+        app: copingheimer
+    spec:
+      containers:
+        - name: copingheimer
+          image: edouard127/copingheimer:latest
+          imagePullPolicy: Always
+          volumeMounts:
+            - name: copingheimer-persistent-storage
+              mountPath: /usr/src/app
+      volumes:
+        - name: copingheimer-persistent-storage
+          persistentVolumeClaim:
+            claimName: copingheimer-persistent-storage-claim
+---
+# Persistent Volume Claim
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: copingheimer-persistent-storage-claim
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+  volumeName: copingheimer-persistent-storage
+  storageClassName: manual
+---
+# Persistent Volume
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: copingheimer-persistent-storage
+spec:
+  capacity:
+    storage: 5Gi
+  nfs:
+    server: 192.168.0.33
+    path: /mnt/data/copingheimer
+  accessModes:
+    - ReadWriteOnce
+  persistentVolumeReclaimPolicy: Retain
+  storageClassName: manual
+  volumeMode: Filesystem
