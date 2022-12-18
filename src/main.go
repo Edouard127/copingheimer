@@ -91,29 +91,18 @@ func main() {
 		}
 	}
 
+	rand := Arguments.Mode == "random"
+
 	for {
 		// If the CPUSaver is enabled, we will only start a new instance if there is one available
 		if Arguments.CPUSaver {
 			if tasks < Arguments.Instances {
 				tasks++
-				go HandleServer(IP().GetNext(tasks))
-				/*switch Arguments.Mode {
-				case "random":
-					tasks++
-					go HandleServer(utils.RandIP())
-				case "order":
-					tasks++
-					go HandleServer(IP().GetNext(tasks))
-				}*/
+				go HandleServer(IP().GetNext(tasks, rand))
 			}
 		} else {
 			tasks++
-			switch Arguments.Mode {
-			case "random":
-				go HandleServer(utils.RandIP())
-			case "order":
-				go HandleServer(IP().GetNext(tasks))
-			}
+			go HandleServer(IP().GetNext(tasks, rand))
 		}
 	}
 }

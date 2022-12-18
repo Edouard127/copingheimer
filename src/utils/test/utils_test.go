@@ -20,12 +20,12 @@ func Test_GetIn(t *testing.T) {
 
 func Test_Blacklist(t *testing.T) {
 	pwd, _ := os.Getwd()
-	if data, err := utils.ReadBlacklist(&intf.Arguments{
+	if data, err := intf.ReadBlacklist(&intf.Arguments{
 		BlacklistFile: path.Join(pwd, "test_blacklist.txt"),
 	}); err != nil {
 		t.Error(err)
 	} else {
-		for _, ip := range data {
+		for _, ip := range *data {
 			t.Log(ip)
 		}
 	}

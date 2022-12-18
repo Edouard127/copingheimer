@@ -2,15 +2,18 @@ package utils
 
 import (
 	"edouard127/copingheimer/src/intf"
+	"github.com/valyala/fastrand"
 	"math"
-	"math/rand"
 	"net"
 )
 
-func getNextIP(ip net.IP, offset int) net.IP {
+func getNextIP(ip net.IP, offset int, random bool) net.IP {
 	i := ip.To4()
 	v := uint(i[0])<<24 + uint(i[1])<<16 + uint(i[2])<<8 + uint(i[3])
 	v += uint(offset)
+	if random {
+		v += uint(fastrand.Uint32n(uint32(v) + 255))
+	}
 	if v >= 167772160 && v <= 184549375 {
 		v += 16777216
 	} else if v >= 2886729728 && v <= 2887778303 {
@@ -54,11 +57,7 @@ func AddIP(a, b net.IP) net.IP {
 }
 
 func RandIP() net.IP {
-	ip := make(net.IP, 4)
-	for i := 0; i < 4; i++ {
-		ip[i] = byte(rand.Intn(255))
-	}
-	return getNextIP(ip, 0)
+	return getNextIP([]byte{0, 0, 0, 0}, 0, true)
 }
 
 func IPSubnetIterator(subnet *net.IPNet, blacklist intf.Blacklist) func() SubnetIterator {
@@ -67,7 +66,7 @@ func IPSubnetIterator(subnet *net.IPNet, blacklist intf.Blacklist) func() Subnet
 		if ip == nil {
 			ip = subnet.IP
 		} else {
-			ip = getNextIP(ip, 1)
+			ip = getNextIP(ip, 1, false)
 		}
 		if subnet.Contains(ip) {
 			return SubnetIterator{CurIP: ip, Blacklist: blacklist}
@@ -82,11 +81,11 @@ type SubnetIterator struct {
 }
 
 func (s SubnetIterator) Next() {
-	s.CurIP = getNextIP(s.CurIP, 1)
+	s.CurIP = getNextIP(s.CurIP, 1, false)
 }
 
-func (s SubnetIterator) GetNext(i int) net.IP {
-	return getNextIP(s.CurIP, i)
+func (s SubnetIterator) GetNext(i int, rand bool) net.IP {
+	return getNextIP(s.CurIP, i, rand)
 }
 
 func (s SubnetIterator) SetCurrent(ip net.IP) {
