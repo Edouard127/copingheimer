@@ -88,6 +88,8 @@ func main() {
 
 	rand := Arguments.Mode == "random"
 
+	go KeepConnection() // Make sure the connection is not overwhemled
+
 	for {
 		// If the CPUSaver is enabled, we will only start a new instance if there is one available
 		if Arguments.CPUSaver {
@@ -118,4 +120,15 @@ func HandleServer(ip net.IP) {
 	}
 	tasks--
 	IP().Next()
+}
+
+func KeepConnection() {
+	for {
+		time.Sleep(10 * time.Second)
+		if _, err := net.DialTimeout("tcp", "google.com:80", 10*time.Second); err != nil {
+			fmt.Println("connection lost, adjusting instances count")
+			rollback := IP().GetNext(-(Arguments.Instances * 10), false)
+			IP().SetCurrent(rollback)
+		}
+	}
 }
