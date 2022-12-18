@@ -17,12 +17,6 @@ var (
 	IP        = func() utils.SubnetIterator { return utils.SubnetIterator{} }
 	Database  = interface{}(nil)
 	tasks     = 0
-
-	// Arguments
-	// -c, --config: Path to the config file
-	// -ip, --ip: IP address to start from
-	// -i, --instances: Number of instances to run
-	// -t, --timeout: Timeout for each ping
 )
 
 func init() {
@@ -45,6 +39,7 @@ func init() {
 	flag.StringVar(&Arguments.Database, "database", "mongodb", "Database to use (default: mongodb) (mongodb, bolt)")
 	flag.StringVar(&Arguments.DatabaseURL, "du", "mongodb://localhost:27017", "URL to the database")
 	flag.StringVar(&Arguments.DatabaseURL, "database-url", "mongodb://localhost:27017", "URL to the database")
+	flag.BoolVar(&Arguments.Clean, "clean", false, "Whether to clean the database or not (default: false)")
 	flag.Parse()
 
 	if Arguments.Help {
@@ -55,6 +50,15 @@ func init() {
 	var err error
 	if Database, err = utils.InitDatabase(&Arguments); err != nil {
 		panic(err)
+	}
+
+	if Arguments.Clean {
+		if n, err := utils.CleanDuplicates(Database); err != nil {
+			panic(err)
+		} else {
+			fmt.Println("Done, the new number of entries is", n)
+		}
+		os.Exit(0)
 	}
 
 	Subnet = &net.IPNet{
@@ -81,15 +85,6 @@ func main() {
 		"Copingheimer, by Kamigen\n" +
 			"This program will ping Minecraft servers all around the world and try to get as much data as possible",
 	)
-
-	// Read the current IP from the database
-	if data, err := utils.Find(Database, "current_ip"); err != nil {
-		fmt.Printf("failed to read current IP: %s\n", err)
-	} else {
-		if len(data) > 0 {
-			IP().SetCurrent(net.ParseIP(data[0]))
-		}
-	}
 
 	rand := Arguments.Mode == "random"
 

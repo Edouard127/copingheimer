@@ -1,15 +1,22 @@
 package utils
 
 import (
+	"bytes"
 	"context"
 	"edouard127/copingheimer/src/intf"
 	"fmt"
 	"github.com/boltdb/bolt"
 	"go.mongodb.org/mongo-driver/bson"
+	"go.mongodb.org/mongo-driver/bson/primitive"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"time"
 )
+
+type Entry struct {
+	IP   string
+	Data []byte
+}
 
 func InitDatabase(cfg *intf.Arguments) (interface{}, error) {
 	switch cfg.Database {
@@ -51,6 +58,21 @@ func InitDatabase(cfg *intf.Arguments) (interface{}, error) {
 }
 
 func Write(db interface{}, ip string, data []byte) error {
+	// Check if the IP is in the database
+	entries, _ := Find(db, ip)
+	if len(entries) > 1 {
+		for _, entry := range entries {
+			if bytes.Equal(entry, data) {
+				if err := Delete(db, ip); err != nil {
+					return err
+				}
+			}
+		}
+	} else if len(entries) == 1 {
+		if bytes.Equal(entries[0], data) {
+			return nil
+		}
+	}
 	switch db.(type) {
 	case *bolt.DB:
 		if err := db.(*bolt.DB).Update(func(tx *bolt.Tx) error {
@@ -97,16 +119,16 @@ func Read(db interface{}, ip string) ([]byte, error) {
 	return nil, nil
 }
 
-func Find(db interface{}, search string) ([]string, error) {
+func Find(db interface{}, search string) ([][]byte, error) {
+	var ips [][]byte
 	switch db.(type) {
 	case *bolt.DB:
-		var ips []string
 		if err := db.(*bolt.DB).View(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("servers"))
 			c := b.Cursor()
 			for k, v := c.First(); k != nil; k, v = c.Next() {
 				if string(v) == search {
-					ips = append(ips, string(k))
+					ips = append(ips, k)
 				}
 			}
 			return nil
@@ -124,9 +146,8 @@ func Find(db interface{}, search string) ([]string, error) {
 			if err := cursor.All(ctx, &results); err != nil {
 				return nil, err
 			}
-			var ips []string
 			for _, result := range results {
-				ips = append(ips, (*result)["ip"].(string))
+				ips = append(ips, (*result)["ip"].([]byte))
 			}
 			return ips, nil
 		}
@@ -134,36 +155,92 @@ func Find(db interface{}, search string) ([]string, error) {
 	return nil, nil
 }
 
-func GetAll(db interface{}) (map[string][]byte, error) {
+func Delete(db interface{}, ip string) error {
 	switch db.(type) {
 	case *bolt.DB:
-		var data map[string][]byte
+		if err := db.(*bolt.DB).Update(func(tx *bolt.Tx) error {
+			b := tx.Bucket([]byte("servers"))
+			err := b.Delete([]byte(ip))
+			return err
+		}); err != nil {
+			return err
+		}
+	case *mongo.Client:
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if _, err := db.(*mongo.Client).Database("copingheimer").Collection("servers").DeleteOne(ctx, bson.M{"ip": ip}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func Drop(db interface{}) error {
+	switch db.(type) {
+	case *bolt.DB:
+		if err := db.(*bolt.DB).Update(func(tx *bolt.Tx) error {
+			err := tx.DeleteBucket([]byte("servers"))
+			return err
+		}); err != nil {
+			return err
+		}
+	case *mongo.Client:
+		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+		defer cancel()
+		if _, err := db.(*mongo.Client).Database("copingheimer").Collection("servers").DeleteMany(ctx, bson.M{}); err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+func CleanDuplicates(db interface{}) (int, error) {
+	if all, err := GetAll(db); err != nil {
+		return 0, err
+	} else {
+		if err := Drop(db); err != nil {
+			return 0, err
+		}
+		for _, entry := range all {
+			if err := Write(db, entry.IP, entry.Data); err != nil {
+				return 0, err
+			}
+		}
+		return len(all), nil
+	}
+}
+
+func GetAll(db interface{}) ([]Entry, error) {
+	all := make([]Entry, 0)
+	switch db.(type) {
+	case *bolt.DB:
 		if err := db.(*bolt.DB).View(func(tx *bolt.Tx) error {
 			b := tx.Bucket([]byte("servers"))
 			c := b.Cursor()
 			for k, v := c.First(); k != nil; k, v = c.Next() {
-				data[string(k)] = v
+				all = append(all, Entry{IP: string(k), Data: v})
 			}
 			return nil
 		}); err != nil {
 			return nil, err
 		}
-		return data, nil
+		return all, nil
 	case *mongo.Client:
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		defer cancel()
-		var results []*bson.M
+		results := make([]*bson.M, 0)
 		if cursor, err := db.(*mongo.Client).Database("copingheimer").Collection("servers").Find(ctx, bson.M{}); err != nil {
 			return nil, err
 		} else {
 			if err := cursor.All(ctx, &results); err != nil {
 				return nil, err
 			} else {
-				data := make(map[string][]byte)
 				for _, result := range results {
-					data[(*result)["ip"].(string)] = (*result)["data"].([]byte)
+					if binData, ok := (*result)["data"].(primitive.Binary); ok {
+						all = append(all, Entry{IP: (*result)["ip"].(string), Data: binData.Data})
+					}
 				}
-				return data, nil
+				return all, nil
 			}
 		}
 	}

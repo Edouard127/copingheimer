@@ -22,6 +22,7 @@ type Arguments struct {
 	// Database
 	Database    string // -d, --database: The type of the database, currently supported: bolt, mongodb
 	DatabaseURL string // -du, --database-url: The URL to the database
+	Clean       bool   // -clean: Remove duplicates from the database
 }
 
 func (a *Arguments) ReadFrom(b []byte) error {
