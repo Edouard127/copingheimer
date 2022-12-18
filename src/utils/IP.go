@@ -8,39 +8,27 @@ import (
 )
 
 func getNextIP(ip net.IP, offset int) net.IP {
-	ip = ip.To4()
-	if ip == nil {
-		return nil
+	i := ip.To4()
+	v := uint(i[0])<<24 + uint(i[1])<<16 + uint(i[2])<<8 + uint(i[3])
+	v += uint(offset)
+	if v >= 167772160 && v <= 184549375 {
+		v += 16777216
+	} else if v >= 2886729728 && v <= 2887778303 {
+		v += 1048576
+	} else if v >= 3232235520 && v <= 3232301055 {
+		v += 65536
+	} else if v >= 2130706432 && v <= 2147483647 {
+		v += 16777216
+	} else if v >= 2851995648 && v <= 2852061183 {
+		v += 1048576
+	} else if v >= 2885681152 && v <= 2886746111 {
+		v += 1048576
 	}
-	for i := 3; i >= 0; i-- {
-		ip[i] += byte(offset)
-		if ip[i] >= byte(offset) {
-			break
-		}
-		offset = 1
-	}
-	return skipPrivate(ip)
-}
-
-func skipPrivate(ip net.IP) net.IP {
-	if ip[0] == 10 {
-		ip[0]++
-	}
-	if ip[0] == 172 && ip[1]&0xf0 == 16 {
-		ip[1] = 32
-	}
-	if ip[0] == 192 && ip[1] == 168 {
-		ip[0]++
-		ip[1]++
-	}
-	return skipLoopback(ip)
-}
-
-func skipLoopback(ip net.IP) net.IP {
-	if ip[0] == 127 {
-		ip[0]++
-	}
-	return ip
+	v3 := byte(v & 0xFF)
+	v2 := byte((v >> 8) & 0xFF)
+	v1 := byte((v >> 16) & 0xFF)
+	v0 := byte((v >> 24) & 0xFF)
+	return []byte{v0, v1, v2, v3}
 }
 
 func IPin(ip, a, b net.IP) bool {
@@ -70,7 +58,7 @@ func RandIP() net.IP {
 	for i := 0; i < 4; i++ {
 		ip[i] = byte(rand.Intn(255))
 	}
-	return skipPrivate(ip)
+	return getNextIP(ip, 0)
 }
 
 func IPSubnetIterator(subnet *net.IPNet, blacklist intf.Blacklist) func() SubnetIterator {
@@ -98,15 +86,7 @@ func (s SubnetIterator) Next() {
 }
 
 func (s SubnetIterator) GetNext(i int) net.IP {
-	ip := getNextIP(s.CurIP, i)
-	if s.Blacklist != nil {
-		for _, ipRange := range s.Blacklist {
-			if IPin(ip, ipRange[0], ipRange[1]) {
-				return s.GetNext(i + 1)
-			}
-		}
-	}
-	return ip
+	return getNextIP(s.CurIP, i)
 }
 
 func (s SubnetIterator) SetCurrent(ip net.IP) {

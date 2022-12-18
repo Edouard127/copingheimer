@@ -33,7 +33,7 @@ func init() {
 	flag.StringVar(&Arguments.Config, "config", "config.env", "Path to the config file")
 	flag.StringVar(&Arguments.Mode, "m", "random", "Mode to run in (default: \"random\") (random, order)")
 	flag.StringVar(&Arguments.Mode, "mode", "random", "Mode to run in (default: \"random\") (random, order)")
-	flag.StringVar(&Arguments.IP, "ip", "0.0.0.0", "IP address to start from, only used in order mode")
+	flag.StringVar(&Arguments.IP, "ip", "0.0.0.0", "IP address to start from with mask, only used in order mode")
 	flag.BoolVar(&Arguments.CPUSaver, "cs", true, "Whether to enable the CPU saver or not (default: true)")
 	flag.BoolVar(&Arguments.CPUSaver, "cpu-saver", true, "Whether to enable the CPU saver or not (default: true)")
 	flag.IntVar(&Arguments.Instances, "i", 1, "Number of instances to run (default: 1)")
@@ -100,14 +100,17 @@ func main() {
 	for {
 		// If the CPUSaver is enabled, we will only start a new instance if there is one available
 		if Config.CPUSaver {
-			if tasks <= Config.InstanceCount {
+			if tasks < Config.InstanceCount {
 				tasks++
-				switch Arguments.Mode {
+				go HandleServer(IP().GetNext(tasks))
+				/*switch Arguments.Mode {
 				case "random":
+					tasks++
 					go HandleServer(utils.RandIP())
 				case "order":
+					tasks++
 					go HandleServer(IP().GetNext(tasks))
-				}
+				}*/
 			}
 		} else {
 			tasks++
