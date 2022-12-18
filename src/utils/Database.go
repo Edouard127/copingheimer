@@ -11,7 +11,7 @@ import (
 	"time"
 )
 
-func InitDatabase(cfg *intf.Config) (interface{}, error) {
+func InitDatabase(cfg *intf.Arguments) (interface{}, error) {
 	switch cfg.Database {
 	case "bolt":
 		if Database, err := bolt.Open("copingheimer.db", 0600, nil); err != nil {

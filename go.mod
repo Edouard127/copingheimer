@@ -5,8 +5,6 @@ go 1.19
 require (
 	github.com/Tnze/go-mc v1.19.2
 	github.com/boltdb/bolt v1.3.1
-	github.com/caarlos0/env v3.5.0+incompatible
-	github.com/joho/godotenv v1.4.0
 	go.mongodb.org/mongo-driver v1.11.1
 )
 
@@ -24,5 +22,5 @@ require (
 	golang.org/x/crypto v0.0.0-20220622213112-05595931fe9d // indirect
 	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c // indirect
 	golang.org/x/sys v0.3.0 // indirect
-	golang.org/x/text v0.3.7 // indirect
+	golang.org/x/text v0.5.0 // indirect
 )

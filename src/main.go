@@ -12,12 +12,11 @@ import (
 )
 
 var (
-	Config        = intf.LoadConfig("config.env")
-	Arguments     = intf.Arguments{}
-	Subnet        = &net.IPNet{}
-	IP            = func() utils.SubnetIterator { return utils.SubnetIterator{} }
-	Database, err = utils.InitDatabase(Config)
-	tasks         = 0
+	Arguments = intf.Arguments{}
+	Subnet    = &net.IPNet{}
+	IP        = func() utils.SubnetIterator { return utils.SubnetIterator{} }
+	Database  = interface{}(nil)
+	tasks     = 0
 
 	// Arguments
 	// -c, --config: Path to the config file
@@ -53,11 +52,9 @@ func init() {
 		os.Exit(0)
 	}
 
-	if Config.InstanceCount == 0 {
-		Config.InstanceCount = Arguments.Instances
-	}
-	if Config.Timeout == 0 {
-		Config.Timeout = Arguments.Timeout
+	var err error
+	if Database, err = utils.InitDatabase(&Arguments); err != nil {
+		panic(err)
 	}
 
 	Subnet = &net.IPNet{
@@ -80,9 +77,6 @@ func handle() {
 }
 
 func main() {
-	if err != nil {
-		panic(err)
-	}
 	fmt.Println(
 		"Copingheimer, by Kamigen\n" +
 			"This program will ping Minecraft servers all around the world and try to get as much data as possible",
@@ -99,8 +93,8 @@ func main() {
 
 	for {
 		// If the CPUSaver is enabled, we will only start a new instance if there is one available
-		if Config.CPUSaver {
-			if tasks < Config.InstanceCount {
+		if Arguments.CPUSaver {
+			if tasks < Arguments.Instances {
 				tasks++
 				go HandleServer(IP().GetNext(tasks))
 				/*switch Arguments.Mode {
@@ -126,7 +120,7 @@ func main() {
 
 func HandleServer(ip net.IP) {
 	// Ping the server
-	if data, _, err := provider.PingAndListTimeout(ip.String(), time.Duration(Config.Timeout)*time.Millisecond); err != nil {
+	if data, _, err := provider.PingAndListTimeout(ip.String(), time.Duration(Arguments.Timeout)*time.Millisecond); err != nil {
 		fmt.Println("failed to ping", ":", err)
 	} else {
 		status := &intf.StatusResponse{}
