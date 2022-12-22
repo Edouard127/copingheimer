@@ -24,8 +24,14 @@ spec:
           args:
             - '-mongo=$(mongodb)'
           env:
+            - name: type
+              value: "server"
             - name: mongodb
               value: mongodb://localhost:27017
+            - name: node
+              value: 127.0.0.1
+            - name: instances
+              value: 512
           resources:
             limits:
               cpu: '2'
