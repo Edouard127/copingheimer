@@ -1,14 +1,16 @@
 package intf
 
 import (
+	"encoding/base64"
 	"encoding/json"
 )
 
 type StatusResponse struct {
+	IP      string `json:"ip"`
 	Version struct {
 		Name     string `json:"name"`
 		Protocol int    `json:"protocol"`
-	}
+	} `json:"version"`
 	Players struct {
 		Max    int      `json:"max"`
 		Online int      `json:"online"`
@@ -24,9 +26,19 @@ type Player struct {
 	ID   string `json:"id"`
 }
 
-func (s *StatusResponse) ReadFrom(b []byte) error {
-	if err := json.Unmarshal(b, s); err != nil {
-		// Check if description is an array
+func (s *StatusResponse) String() string {
+	b, err := json.Marshal(s)
+	if err != nil {
+		return ""
 	}
-	return nil
+	return base64.StdEncoding.EncodeToString(b)
+}
+
+func (s *StatusResponse) Json(ip string) ([]byte, error) {
+	s.IP = ip
+	return json.Marshal(s)
+}
+
+func (s *StatusResponse) Put(b []byte) error {
+	return json.Unmarshal(b, s)
 }

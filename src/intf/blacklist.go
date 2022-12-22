@@ -5,13 +5,18 @@ import (
 	"io"
 	"net"
 	"os"
+	"path"
 )
 
 type Blacklist [][2]net.IP
 
 func ReadBlacklist(cfg *Arguments) (*Blacklist, error) {
 	b := &Blacklist{}
-	if file, err := os.Open(cfg.BlacklistFile); err != nil {
+	pwd, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+	if file, err := os.Open(path.Join(pwd, cfg.BlacklistFile)); err != nil {
 		return nil, err
 	} else {
 		defer file.Close()
