@@ -1,0 +1,27 @@
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  name: copingheimer-node-ingress-tcp
+spec:
+  routes:
+    - match: Host(`coping.kamigen.xyz`)
+      services:
+        - name: copingheimer-node-service
+          port: 29229
+          weight: 1
+          TerminationDelay: 2000
+---
+apiVersion: traefik.containo.us/v1alpha1
+kind: IngressRoute
+metadata:
+  name: copingheimer-node-ingress
+spec:
+  entryPoints:
+      - websecure
+  routes:
+    - match: Host(`coping.kamigen.xyz`)
+      services:
+          - name: copingheimer-node-service
+            port: 80
+            weight: 1
+            TerminationDelay: 2000

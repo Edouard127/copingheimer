@@ -1,0 +1,56 @@
+# Deployment
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: copingheimer-node-deployment
+  labels:
+    app: copingheimer-node
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: copingheimer-node
+  template:
+    metadata:
+      labels:
+        app: copingheimer-node
+    spec:
+      containers:
+        - name: copingheimer-node
+          image: edouard127/copingheimer-node:latest
+          ports:
+            - containerPort: 80
+          command: ["./socket"]
+          args:
+            - '-mongo=$(mongodb)'
+          env:
+            - name: mongodb
+              value: mongodb://localhost:27017
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 750m
+              memory: 500Mi
+          imagePullPolicy: Always
+        #imagePullSecrets:
+        #- name: regcrednexus # Example of how to use a secret
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: copingheimer-node-service
+spec:
+    selector:
+        app: copingheimer-node
+    ports:
+        - protocol: HTTP
+          port: 80
+          targetPort: 80
+        - protocol: TCP
+          port: 29229
+          targetPort: 29229
+    type: LoadBalancer
+---
+
