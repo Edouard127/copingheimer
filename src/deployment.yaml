@@ -20,6 +20,7 @@ spec:
           image: edouard127/copingheimer-node:latest
           ports:
             - containerPort: 80
+            - containerPort: 29229
           command: ["./socket"]
           args:
             - '-mongo=$(mongodb)'
