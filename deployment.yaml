@@ -23,16 +23,16 @@ spec:
             - containerPort: 29229
           command: ["./socket"]
           args:
-            - '-mongo=$(mongodb)'
+            - '-mongo=$(mongodb) -type=$(type)'
           env:
             - name: type
               value: "server"
             - name: mongodb
               value: mongodb://localhost:27017
             - name: node
-              value: 127.0.0.1
+              value: "127.0.0.1"
             - name: instances
-              value: 512
+              value: "512"
           resources:
             limits:
               cpu: '2'
@@ -41,7 +41,7 @@ spec:
               cpu: 750m
               memory: 500Mi
           imagePullPolicy: Always
-        #imagePullSecrets:
+      #imagePullSecrets:
         #- name: regcrednexus # Example of how to use a secret
 ---
 apiVersion: v1
@@ -49,15 +49,16 @@ kind: Service
 metadata:
   name: copingheimer-node-service
 spec:
-    selector:
-        app: copingheimer-node
-    ports:
-        - protocol: HTTP
-          port: 80
-          targetPort: 80
-        - protocol: TCP
-          port: 29229
-          targetPort: 29229
-    type: LoadBalancer
+  selector:
+    app: copingheimer-node
+  ports:
+    - protocol: TCP
+      name: "web"
+      port: 80
+      targetPort: 80
+    - protocol: TCP
+      name: "node"
+      port: 29229
+      targetPort: 29229
+  type: LoadBalancer
 ---
-
