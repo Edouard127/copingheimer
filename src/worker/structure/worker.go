@@ -62,7 +62,7 @@ func (w *Worker) Connect(addr net.TCPAddr) {
 
 func (w *Worker) Handle() {
 	go w.keepNetwork()
-	go w.handleConnection()
+	go w.handleLogin()
 	fmt.Println("Let's all cope together !")
 
 	r := /*w.Arguments.Mode == "random"*/ false // TODO: implement random mode
@@ -154,7 +154,7 @@ func (w *Worker) keepNetwork() {
 	}
 }
 
-func (w *Worker) handleConnection() {
+func (w *Worker) handleLogin() {
 	var p packet.Packet
 	for {
 		if err := w.Socket.ReadPacket(&p); err == nil {
