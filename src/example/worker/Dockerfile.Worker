@@ -1,6 +1,0 @@
-FROM golang:1.19-alpine AS builder
-WORKDIR /app
-COPY . .
-RUN go build -o worker ./src/example/worker/main.go
-RUN chmod +x worker
-CMD ["./worker"]
