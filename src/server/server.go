@@ -39,7 +39,10 @@ func StartServer(mongo string) {
 				for {
 					if err := conn.ReadPacket(&p); err == nil {
 						if err := server.HandlePacket(conn, p); err != nil {
-							fmt.Println(err)
+							if id, ok := server.Dashboard.FindUser(conn.IP()); ok {
+								server.Dashboard.Delete(id)
+							}
+							server.Remove(conn)
 						}
 					}
 				}

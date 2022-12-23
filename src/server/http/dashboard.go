@@ -50,16 +50,37 @@ func (d *Dashboard) Start() {
 }
 
 type User struct {
+	IP        net.IP
 	Date      time.Time
 	RefreshAt time.Time
 }
 
-func (d *Dashboard) register(id int32, date time.Time) int32 {
+func (d *Dashboard) register(ip net.IP, id int32, date time.Time) int32 {
 	d.authUsers[id] = User{
+		IP:        ip,
 		Date:      date,
-		RefreshAt: date.Add(time.Minute * 5),
+		RefreshAt: date.Add(time.Hour * 24),
 	}
 	return id
+}
+
+func (d *Dashboard) Delete(id int32) {
+	delete(d.authUsers, id)
+}
+
+func (d *Dashboard) RefreshUser(id int32) {
+	if user, ok := d.authUsers[id]; ok {
+		user.RefreshAt = time.Now().Add(time.Hour * 24)
+	}
+}
+
+func (d *Dashboard) FindUser(ip net.IP) (int32, bool) {
+	for id, user := range d.authUsers {
+		if user.IP.Equal(ip) {
+			return id, true
+		}
+	}
+	return 0, false
 }
 
 func (d *Dashboard) CreateNewUser(ip net.IP) int32 {
@@ -69,5 +90,5 @@ func (d *Dashboard) CreateNewUser(ip net.IP) int32 {
 		n += int32(ip[i]) | int32(date.Nanosecond()>>(i*8))
 	}
 
-	return d.register(n, date)
+	return d.register(ip, n, date)
 }

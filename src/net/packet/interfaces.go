@@ -34,6 +34,12 @@ type Conn struct {
 	states    *States
 }
 
+func (c *Conn) IP() net.IP {
+	ip := c.Socket.RemoteAddr().String()
+	p, _, _ := net.SplitHostPort(ip)
+	return net.ParseIP(p)
+}
+
 func NewConnection(conn *net.TCPConn) *Conn {
 	return &Conn{
 		Socket: conn,
