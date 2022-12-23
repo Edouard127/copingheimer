@@ -94,11 +94,11 @@ type Server struct {
 	clients   []*Conn
 }
 
-func NewServer() *Server {
+func NewServer(mongo string) *Server {
 	return &Server{
 		EventHandlers: EventHandlers{},
 		Events:        Events{handlers: make(map[int32]*handlerHeap, 0)},
-		Dashboard:     http.NewDashboard(),
+		Dashboard:     http.NewDashboard(mongo),
 		clients:       make([]*Conn, 0),
 	}
 }

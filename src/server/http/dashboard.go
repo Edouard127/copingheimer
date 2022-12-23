@@ -2,7 +2,6 @@ package http
 
 import (
 	"edouard127/copingheimer/src/intf"
-	"flag"
 	"fmt"
 	"github.com/gin-gonic/gin"
 	"net"
@@ -16,12 +15,10 @@ type Dashboard struct {
 	authUsers map[int32]User
 }
 
-func NewDashboard() *Dashboard {
-	mongo := flag.String("mongo", "mongodb://localhost:27017", "MongoDB connection string")
-	flag.Parse()
+func NewDashboard(mongo string) *Dashboard {
 	return &Dashboard{
 		Engine:    gin.Default(),
-		Database:  intf.InitDatabase(*mongo),
+		Database:  intf.InitDatabase(mongo),
 		authUsers: make(map[int32]User, 0),
 	}
 }

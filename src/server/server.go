@@ -6,12 +6,10 @@ import (
 	"net"
 )
 
-var (
-	listn  = &packet.Listener{}
-	server = packet.NewServer()
-)
+var listn = &packet.Listener{}
 
-func StartServer() {
+func StartServer(mongo string) {
+	server := packet.NewServer(mongo)
 	var err error
 	taddr := net.TCPAddr{
 		IP:   []byte{0, 0, 0, 0},

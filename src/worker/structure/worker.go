@@ -100,18 +100,13 @@ func (w *Worker) scan() {
 		}
 		if !w.States.Has(packet.Offline) {
 			// Post the status to the server
-			parsedIP, _, err := net.SplitHostPort(w.Arguments.Node)
-			if err != nil {
-				fmt.Println("error while parsing the node ip:", err)
-				return
-			}
 			go func() {
 				b, err := status.Json(s.String())
 				if err != nil {
 					fmt.Println("error while marshalling the status:", err)
 					return
 				}
-				req, err := http.NewRequest("POST", "http://"+parsedIP+":80/api/status", bytes.NewBuffer(b))
+				req, err := http.NewRequest("POST", "http://"+w.Arguments.Node+":80/api/status", bytes.NewBuffer(b))
 				req.Header.Set("Content-Type", "application/json")
 				if err != nil {
 					fmt.Println("error while creating the request:", err)
