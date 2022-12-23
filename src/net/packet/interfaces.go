@@ -8,6 +8,8 @@ import (
 	"net"
 )
 
+const MaxPacketSize = 1024 // 1KB
+
 type Listener struct{ net.TCPListener }
 
 func ListenProvider(addr net.TCPAddr) (*Listener, error) {
@@ -70,6 +72,9 @@ func (c *Conn) ReadPacket(p *Packet) error {
 
 	if err := c.readBytes(&PacketID, &Length); err != nil {
 		return err
+	}
+	if Length+4 > MaxPacketSize || Length < 0 {
+		return fmt.Errorf("packet size %d is invalid", Length)
 	}
 	p.ID = PacketID
 	p.Data = make([]byte, Length)
