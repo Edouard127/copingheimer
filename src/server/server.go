@@ -25,7 +25,6 @@ func StartServer(mongo string) {
 		packet.PacketHandler{ID: packet.SPacketLogin, F: server.EventHandlers.ConfirmRegistration},
 		packet.PacketHandler{ID: packet.SPacketIP, F: server.EventHandlers.ConfirmIP},
 	)
-
 	go server.Dashboard.Start()
 
 	for {

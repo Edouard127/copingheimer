@@ -34,12 +34,8 @@ func (d *Dashboard) Start() {
 		}
 		fmt.Println("Received status:", data)
 		c.JSON(http.StatusOK, gin.H{"status": "ok"})
-		bytes, err := data.Json(data.IP)
-		if err != nil {
-			fmt.Println("Error while marshalling the json data:", err)
-			return
-		}
-		if err := d.Database.Write(data.IP, bytes); err != nil {
+
+		if err := d.Database.Write(data.IP, &data); err != nil {
 			fmt.Println("Error while writing the json data:", err)
 			return
 		}

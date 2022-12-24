@@ -6,24 +6,24 @@ import (
 )
 
 type StatusResponse struct {
-	IP      string `json:"ip"`
+	IP      string `json:"ip" bson:"ip"`
 	Version struct {
-		Name     string `json:"name"`
-		Protocol int    `json:"protocol"`
-	} `json:"version"`
+		Name     string `json:"name" bson:"name"`
+		Protocol int    `json:"protocol" bson:"protocol"`
+	} `json:"version" bson:"version"`
 	Players struct {
-		Max    int      `json:"max"`
-		Online int      `json:"online"`
-		Sample []Player `json:"sample"`
-	} `json:"players"`
-	Favicon           string `json:"favicon"`
-	PreviewChat       string `json:"preview_chat"`
-	EnforceSecureChat bool   `json:"enforce_secure_chat"`
+		Max    int      `json:"max" bson:"max"`
+		Online int      `json:"online" bson:"online"`
+		Sample []Player `json:"sample" bson:"sample"`
+	} `json:"players" bson:"players"`
+	Favicon           string `json:"favicon" bson:"favicon"`
+	PreviewChat       string `json:"preview_chat" bson:"preview_chat"`
+	EnforceSecureChat bool   `json:"enforce_secure_chat" bson:"enforce_secure_chat"`
 }
 
 type Player struct {
-	Name string `json:"name"`
-	ID   string `json:"id"`
+	Name string `json:"name" bson:"name"`
+	ID   string `json:"id" bson:"id"`
 }
 
 func (s *StatusResponse) String() string {
