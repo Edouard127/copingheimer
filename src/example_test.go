@@ -12,9 +12,8 @@ import (
 
 func TestClientServerInteraction(t *testing.T) {
 	s := server.NewServer(&core.ServerOption{
-		MongoDB: "mongodb+srv://datauser:anishiscool@cluster0-4czep.mongodb.net/test?retryWrites=true&w=majority",
+		MongoDB: "mongodb://localhost:27017",
 		Host:    "127.0.0.1",
-		Port:    29969,
 		StartIP: core.IPInt(core.DefaultIP),
 	})
 
