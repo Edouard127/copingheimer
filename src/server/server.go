@@ -31,6 +31,7 @@ func NewServer(options *core.ServerOption) *Server {
 }
 
 func (s *Server) Handle() {
+	s.Info("server started")
 	for {
 		conn, err := s.Accept()
 		if err != nil {

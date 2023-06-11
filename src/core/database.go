@@ -3,6 +3,7 @@ package core
 import (
 	"bytes"
 	"context"
+	"fmt"
 	pk "github.com/Tnze/go-mc/net/packet"
 	"go.mongodb.org/mongo-driver/bson"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -21,11 +22,17 @@ type Database struct {
 
 func InitDatabase(url string) *Database {
 	var db Database
-	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
-	if client, err := mongo.Connect(ctx, options.Client().ApplyURI(url)); err != nil {
-		panic(err)
-	} else {
+
+	go func() {
+		<-ctx.Done()
+		if ctx.Err() != nil {
+			panic(fmt.Errorf("database connection timed out: %v", ctx.Err()))
+		}
+	}()
+
+	if client, err := mongo.Connect(ctx, options.Client().ApplyURI(url)); err == nil {
 		// Create the collection if it doesn't exist
 		if client.Database("copingheimer").Collection("servers").FindOne(ctx, bson.M{}); err == nil {
 			db = Database{client}

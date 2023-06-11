@@ -31,7 +31,7 @@ func NewWorker(option *core.ClientOption) *Worker {
 	addr, _ := net.ResolveTCPAddr("tcp", option.Node)
 	conn, err := net.DialTCP("tcp", nil, addr)
 	if err != nil {
-		logger.Error("cannot connect to server", zap.Error(err))
+		logger.Panic("cannot connect to server", zap.Error(err))
 	}
 	w := &Worker{
 		Logger:  logger.With(zap.String("node", addr.String())),
