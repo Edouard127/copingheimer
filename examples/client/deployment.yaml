@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: copingheimer-worker-deployment
+  labels:
+    app: copingheimer-worker
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: copingheimer-worker
+  template:
+    metadata:
+      labels:
+        app: copingheimer-worker
+    spec:
+      containers:
+        - name: copingheimer-worker
+          image: edouard127/copingheimer-worker:latest
+          ports:
+            - containerPort: 29969
+          command: ["./client"]
+          args:
+            - '-node=$(node) -instances=$(instances) -timeout=$(timeout)'
+          env:
+            - name: node
+              value: 127.0.0.1:29969
+            - name: instances
+              value: "256"
+            - name: timeout
+              value: "4000"
+          resources:
+            limits:
+              cpu: '2'
+              memory: 1Gi
+            requests:
+              cpu: 750m
+              memory: 500Mi
+          imagePullPolicy: Always
+      #imagePullSecrets:
+        #- name: regcrednexus # Example of how to use a secret

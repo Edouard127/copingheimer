@@ -4,4 +4,4 @@ COPY . .
 RUN go build -o server .
 RUN chmod +x server
 EXPOSE 29969
-CMD ["./socket"]
+CMD ["./server"]
